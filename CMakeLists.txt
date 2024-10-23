@@ -198,16 +198,6 @@ SET(QT_LIBRARIES
 	Qt${QT_VERSION_MAJOR}::Xml
 )
 
-IF(WANT_QT6)
-    # Core5Compat is needed so that we get QTextCodec which is used by
-    # the Hydrogen importer plugin. 
-	# TODO : fix hydrogen importer plugin with qt6
-    # See: https://doc.qt.io/qt-6/qtcore5-index.html
-    FIND_PACKAGE(Qt6 COMPONENTS Core5Compat REQUIRED)
-    INCLUDE_DIRECTORIES(${Qt6Core5Compat_INCLUDE_DIRS})
-    SET(QT_LIBRARIES ${QT_LIBRARIES} Qt6::Core5Compat)
-ENDIF()
-
 IF(LMMS_BUILD_LINUX AND WANT_VST AND NOT WANT_QT6)
     FIND_PACKAGE(Qt5 COMPONENTS X11Extras REQUIRED)
     LIST(APPEND QT_LIBRARIES Qt5::X11Extras)
