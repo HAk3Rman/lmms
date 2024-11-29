@@ -1,0 +1,45 @@
+{
+    "name": "Prism",
+    "version": "1.0.0",
+    "description": "A modern, flat design theme with glass effects for LMMS",
+    "author": "LMMS UI Modernization Project",
+    "license": "GPL-2.0",
+    "style": "style.css",
+    "darkMode": true,
+    "features": {
+        "glassMorphism": true,
+        "roundedCorners": true,
+        "shadows": true,
+        "animations": true
+    },
+    "colors": {
+        "primary": "#6200ee",
+        "primaryVariant": "#3700b3",
+        "secondary": "#03dac6",
+        "secondaryVariant": "#018786",
+        "background": "#121212",
+        "surface": "#1e1e1e",
+        "error": "#cf6679",
+        "onPrimary": "#ffffff",
+        "onSecondary": "#000000",
+        "onBackground": "#ffffff",
+        "onSurface": "#ffffff",
+        "onError": "#000000"
+    },
+    "fonts": {
+        "primary": "Segoe UI",
+        "fallback": ["system-ui", "-apple-system", "sans-serif"]
+    },
+    "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "32px"
+    },
+    "borderRadius": {
+        "sm": "4px",
+        "md": "8px",
+        "lg": "12px"
+    }
+}

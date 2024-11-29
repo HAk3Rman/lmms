@@ -26,61 +26,80 @@
 #define LMMS_GUI_PLUGIN_BROWSER_H
 
 #include <QPixmap>
-
+#include <QStyledItemDelegate>
 #include "SideBarWidget.h"
 #include "Plugin.h"
+#include "FavoritesManager.h"
 
 class QLineEdit;
 class QTreeWidget;
+class QTreeWidgetItem;
 
 namespace lmms::gui
 {
 
 class PluginBrowser : public SideBarWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	PluginBrowser( QWidget * _parent );
-	~PluginBrowser() override = default;
+    PluginBrowser(QWidget* parent);
+    ~PluginBrowser() override = default;
 
 private slots:
-	void onFilterChanged( const QString & filter );
+    void onFilterChanged(const QString& filter);
+    void onFavoritesChanged(const QString& pluginId);
+    void showFavoritesOnly(bool checked);
+    void showPluginDetails(QTreeWidgetItem* item, int column);
 
 private:
-	void addPlugins();
-	void updateRootVisibility( int index );
-	void updateRootVisibilities();
+    void addPlugins();
+    void updateRootVisibility(int index);
+    void updateRootVisibilities();
+    void createCategoryIcons();
+    void setupUi();
+    void createFavoritesSection();
 
-	QWidget * m_view;
-	QTreeWidget * m_descTree;
+    QWidget* m_view;
+    QTreeWidget* m_descTree;
+    QLineEdit* m_searchBar;
+    QMap<QString, QIcon> m_categoryIcons;
+    QTreeWidgetItem* m_favoritesRoot;
+    bool m_showFavoritesOnly;
 };
-
 
 class PluginDescWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	using PluginKey = Plugin::Descriptor::SubPluginFeatures::Key;
-	PluginDescWidget( const PluginKey & _pk, QWidget * _parent );
-	QString name() const;
-	void openInNewInstrumentTrack(QString value);
+    using PluginKey = Plugin::Descriptor::SubPluginFeatures::Key;
+    PluginDescWidget(const PluginKey& pk, QWidget* parent);
+    QString name() const;
+    void openInNewInstrumentTrack(QString value);
+    QString pluginId() const;
+    bool isFavorite() const;
 
 protected:
-	void enterEvent( QEvent * _e ) override;
-	void leaveEvent( QEvent * _e ) override;
-	void mousePressEvent( QMouseEvent * _me ) override;
-	void paintEvent( QPaintEvent * _pe ) override;
-	void contextMenuEvent(QContextMenuEvent* e) override;
+    void enterEvent(QEvent* e) override;
+    void leaveEvent(QEvent* e) override;
+    void mousePressEvent(QMouseEvent* me) override;
+    void paintEvent(QPaintEvent* pe) override;
+    void contextMenuEvent(QContextMenuEvent* e) override;
+
+private slots:
+    void toggleFavorite();
 
 private:
-	constexpr static int DEFAULT_HEIGHT{24};
+    void loadPluginIcon();
+    void createThumbnail();
 
-	PluginKey m_pluginKey;
-	QPixmap m_logo;
+    PluginKey m_pluginKey;
+    QPixmap m_logo;
+    QPixmap m_thumbnail;
+    bool m_mouseOver;
+    QString m_pluginId;
 
-	bool m_mouseOver;
+    friend class PluginBrowser;
 };
-
 
 } // namespace lmms::gui
 

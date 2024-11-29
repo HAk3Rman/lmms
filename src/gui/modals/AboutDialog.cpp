@@ -23,42 +23,142 @@
  */
 
 
-#include "lmmsversion.h"
 #include "AboutDialog.h"
 #include "embed.h"
 #include "versioninfo.h"
+#include "ThemeManager.h"
 
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QTabWidget>
+#include <QTextBrowser>
+#include <QFontDatabase>
+#include <QApplication>
+#include <QScreen>
 
 namespace lmms::gui
 {
 
 AboutDialog::AboutDialog(QWidget* parent) :
-	QDialog(parent),
-	Ui::AboutDialog()
+    QDialog(parent)
 {
-	setupUi( this );
+    setupModernUi();
+}
 
+void AboutDialog::setupModernUi()
+{
+    // Set window properties
+    setWindowTitle(tr("About LMMS"));
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setMinimumSize(800, 600);
 
-	iconLabel->setPixmap( embed::getIconPixmap( "icon", 64, 64 ) );
+    // Load Inter font
+    int fontId = QFontDatabase::addApplicationFont(":/fonts/Inter-Regular.ttf");
+    QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    QFont modernFont(fontFamily, 10);
+    QApplication::setFont(modernFont);
 
-	versionLabel->setText( versionLabel->text().
-					arg( LMMS_VERSION ).
-					arg( LMMS_BUILDCONF_PLATFORM ).
-					arg( LMMS_BUILDCONF_MACHINE ).
-					arg( QT_VERSION_STR ).
-					arg( LMMS_BUILDCONF_COMPILER_VERSION ) );
-	versionLabel->setTextInteractionFlags(
-					versionLabel->textInteractionFlags() |
-					Qt::TextSelectableByMouse );
+    // Create main layout
+    auto mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(20);
+    mainLayout->setContentsMargins(30, 30, 30, 30);
 
-	copyrightLabel->setText( copyrightLabel->text().
-					arg( LMMS_PROJECT_COPYRIGHT ) );
+    // Header section with logo and version
+    auto headerLayout = new QHBoxLayout;
+    
+    // Logo
+    auto logoLabel = new QLabel(this);
+    logoLabel->setPixmap(QPixmap(":/themes/prism/artwork/prism_logo.svg").scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    headerLayout->addWidget(logoLabel);
 
-	authorLabel->setPlainText( embed::getText( "AUTHORS" ) );
+    // Version info
+    auto versionLayout = new QVBoxLayout;
+    
+    auto titleLabel = new QLabel("LMMS - Prism Studio", this);
+    titleLabel->setFont(QFont(fontFamily, 24, QFont::Bold));
+    versionLayout->addWidget(titleLabel);
 
-	licenseLabel->setPlainText( embed::getText( "LICENSE.txt" ) );
+    QString versionText = tr("Version %1 (%2, %3-bit)")
+        .arg(LMMS_VERSION)
+        .arg(LMMS_BUILDCONF_PLATFORM)
+        .arg(LMMS_BUILDCONF_MACHINE);
+    auto versionLabel = new QLabel(versionText, this);
+    versionLabel->setFont(QFont(fontFamily, 12));
+    versionLayout->addWidget(versionLabel);
 
-	involvedLabel->setPlainText( embed::getText( "CONTRIBUTORS" ) );
+    QString buildText = tr("Built with Qt %1 (%2)")
+        .arg(QT_VERSION_STR)
+        .arg(LMMS_BUILDCONF_COMPILER_VERSION);
+    auto buildLabel = new QLabel(buildText, this);
+    buildLabel->setFont(QFont(fontFamily, 10));
+    versionLayout->addWidget(buildLabel);
+
+    headerLayout->addLayout(versionLayout);
+    headerLayout->addStretch();
+    mainLayout->addLayout(headerLayout);
+
+    // Tabs
+    auto tabWidget = new QTabWidget(this);
+    tabWidget->setFont(modernFont);
+
+    // About tab
+    auto aboutWidget = new QWidget(this);
+    auto aboutLayout = new QVBoxLayout(aboutWidget);
+    
+    auto aboutText = new QTextBrowser(this);
+    aboutText->setOpenExternalLinks(true);
+    aboutText->setFont(modernFont);
+    aboutText->setHtml(tr(
+        "<p>LMMS Prism Studio is a modern digital audio workstation for creating music.</p>"
+        "<p>Copyright %1</p>"
+        "<p>This program is free software; you can redistribute it and/or modify it "
+        "under the terms of the GNU General Public License as published by the Free "
+        "Software Foundation.</p>"
+        "<p>Visit <a href='https://lmms.io'>lmms.io</a> for more information.</p>"
+    ).arg(LMMS_PROJECT_COPYRIGHT));
+    aboutLayout->addWidget(aboutText);
+    tabWidget->addTab(aboutWidget, tr("About"));
+
+    // Authors tab
+    auto authorsText = new QTextBrowser(this);
+    authorsText->setPlainText(embed::getText("AUTHORS"));
+    authorsText->setFont(modernFont);
+    tabWidget->addTab(authorsText, tr("Authors"));
+
+    // Contributors tab
+    auto contributorsText = new QTextBrowser(this);
+    contributorsText->setPlainText(embed::getText("CONTRIBUTORS"));
+    contributorsText->setFont(modernFont);
+    tabWidget->addTab(contributorsText, tr("Contributors"));
+
+    // License tab
+    auto licenseText = new QTextBrowser(this);
+    licenseText->setPlainText(embed::getText("LICENSE.txt"));
+    licenseText->setFont(modernFont);
+    tabWidget->addTab(licenseText, tr("License"));
+
+    mainLayout->addWidget(tabWidget);
+
+    // Close button
+    auto buttonLayout = new QHBoxLayout;
+    auto closeButton = new QPushButton(tr("Close"), this);
+    closeButton->setFont(modernFont);
+    connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(closeButton);
+    mainLayout->addLayout(buttonLayout);
+
+    // Center on screen
+    QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
+    int x = (screenGeometry.width() - width()) / 2;
+    int y = (screenGeometry.height() - height()) / 2;
+    move(x, y);
+
+    // Apply theme
+    QString styleSheet = ThemeManager::instance()->themeStyleSheet();
+    setStyleSheet(styleSheet);
 }
 
 } // namespace lmms::gui

@@ -1,0 +1,475 @@
+/* Prism Theme - Modern UI Theme for LMMS
+   Part of the LMMS UI Modernization Project */
+
+/* Global Variables */
+:root {
+    /* Color Palette */
+    --primary-color: #6200ee;
+    --primary-variant: #3700b3;
+    --secondary-color: #03dac6;
+    --secondary-variant: #018786;
+    --background: #121212;
+    --surface: #1e1e1e;
+    --error: #cf6679;
+    --on-primary: #ffffff;
+    --on-secondary: #000000;
+    --on-background: #ffffff;
+    --on-surface: #ffffff;
+    --on-error: #000000;
+    
+    /* Elevation Overlays */
+    --dp-1: rgba(255, 255, 255, 0.05);
+    --dp-2: rgba(255, 255, 255, 0.07);
+    --dp-3: rgba(255, 255, 255, 0.08);
+    --dp-4: rgba(255, 255, 255, 0.09);
+    --dp-6: rgba(255, 255, 255, 0.11);
+    --dp-8: rgba(255, 255, 255, 0.12);
+    --dp-12: rgba(255, 255, 255, 0.14);
+    --dp-16: rgba(255, 255, 255, 0.15);
+    --dp-24: rgba(255, 255, 255, 0.16);
+    
+    /* Typography */
+    --font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-size-small: 12px;
+    --font-size-medium: 14px;
+    --font-size-large: 16px;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* Border Radius */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+    --transition-slow: 0.35s ease;
+}
+
+/* Base Styles */
+QWidget {
+    background-color: var(--background);
+    color: var(--on-background);
+    font-family: var(--font-family);
+    font-size: var(--font-size-medium);
+}
+
+/* Main Window */
+QMainWindow {
+    background-color: var(--background);
+}
+
+/* Menu Bar */
+QMenuBar {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--dp-4);
+}
+
+QMenuBar::item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: transparent;
+    color: var(--on-surface);
+}
+
+QMenuBar::item:selected {
+    background-color: var(--dp-4);
+    border-radius: var(--border-radius-sm);
+}
+
+/* Toolbars */
+QToolBar {
+    background-color: var(--surface);
+    border: none;
+    spacing: var(--spacing-sm);
+    padding: var(--spacing-xs);
+}
+
+QToolButton {
+    background-color: transparent;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm);
+}
+
+QToolButton:hover {
+    background-color: var(--dp-4);
+}
+
+QToolButton:pressed {
+    background-color: var(--dp-8);
+}
+
+/* Buttons */
+QPushButton {
+    background-color: var(--primary-color);
+    color: var(--on-primary);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-weight: 500;
+}
+
+QPushButton:hover {
+    background-color: color-mix(in srgb, var(--primary-color), var(--dp-4));
+}
+
+QPushButton:pressed {
+    background-color: color-mix(in srgb, var(--primary-color), var(--dp-8));
+}
+
+QPushButton:disabled {
+    background-color: var(--dp-12);
+    color: color-mix(in srgb, var(--on-surface), transparent 60%);
+}
+
+/* Track Controls */
+TrackControlPanel {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-md);
+    margin: var(--spacing-xs);
+    padding: var(--spacing-sm);
+}
+
+/* Piano Roll */
+PianoRoll {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-md);
+}
+
+/* Mixer */
+MixerView {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-md);
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    background-color: transparent;
+    width: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: var(--dp-8);
+    border-radius: var(--border-radius-sm);
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: var(--dp-12);
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: transparent;
+    height: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: var(--dp-8);
+    border-radius: var(--border-radius-sm);
+    min-width: 20px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: var(--dp-12);
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Tabs */
+QTabBar::tab {
+    background-color: transparent;
+    color: var(--on-surface);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+}
+
+QTabBar::tab:selected {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: var(--dp-4);
+}
+
+/* Sliders */
+QSlider::groove:horizontal {
+    background-color: var(--dp-4);
+    height: 4px;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background-color: var(--primary-color);
+    width: 16px;
+    height: 16px;
+    margin: -6px 0;
+    border-radius: 8px;
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: color-mix(in srgb, var(--primary-color), var(--dp-4));
+}
+
+/* Progress Bars */
+QProgressBar {
+    background-color: var(--dp-4);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    height: 4px;
+}
+
+QProgressBar::chunk {
+    background-color: var(--primary-color);
+    border-radius: var(--border-radius-sm);
+}
+
+/* Dialogs */
+QDialog {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-lg);
+}
+
+/* Tooltips */
+QToolTip {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    border: 1px solid var(--dp-4);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* Combo Boxes */
+QComboBox {
+    background-color: var(--dp-4);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm);
+    color: var(--on-surface);
+}
+
+QComboBox::drop-down {
+    border: none;
+}
+
+QComboBox::down-arrow {
+    image: url(artwork:combobox_arrow.svg);
+    width: 12px;
+    height: 12px;
+}
+
+/* Line Edits */
+QLineEdit {
+    background-color: var(--dp-4);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm);
+    color: var(--on-surface);
+}
+
+QLineEdit:focus {
+    background-color: var(--dp-8);
+    border: 2px solid var(--primary-color);
+}
+
+/* Spin Boxes */
+QSpinBox, QDoubleSpinBox {
+    background-color: var(--dp-4);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm);
+    color: var(--on-surface);
+}
+
+/* Group Boxes */
+QGroupBox {
+    background-color: var(--surface);
+    border: 1px solid var(--dp-4);
+    border-radius: var(--border-radius-md);
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+}
+
+QGroupBox::title {
+    color: var(--on-surface);
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 var(--spacing-sm);
+    background-color: var(--surface);
+}
+
+/* Check Boxes */
+QCheckBox {
+    spacing: var(--spacing-sm);
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--border-radius-sm);
+    border: 2px solid var(--on-surface);
+}
+
+QCheckBox::indicator:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    image: url(artwork:checkmark.svg);
+}
+
+/* Radio Buttons */
+QRadioButton {
+    spacing: var(--spacing-sm);
+}
+
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    border: 2px solid var(--on-surface);
+}
+
+QRadioButton::indicator:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    image: url(artwork:radio_checked.svg);
+}
+
+/* Lists and Trees */
+QListView, QTreeView {
+    background-color: var(--surface);
+    border: none;
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-xs);
+}
+
+QListView::item, QTreeView::item {
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+}
+
+QListView::item:selected, QTreeView::item:selected {
+    background-color: var(--primary-color);
+    color: var(--on-primary);
+}
+
+QListView::item:hover:!selected, QTreeView::item:hover:!selected {
+    background-color: var(--dp-4);
+}
+
+/* Headers */
+QHeaderView::section {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    padding: var(--spacing-sm);
+    border: none;
+    border-right: 1px solid var(--dp-4);
+}
+
+/* Splitters */
+QSplitter::handle {
+    background-color: var(--dp-4);
+}
+
+QSplitter::handle:hover {
+    background-color: var(--primary-color);
+}
+
+/* Status Bar */
+QStatusBar {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    border-top: 1px solid var(--dp-4);
+}
+
+/* Custom Widgets */
+AutomationEditor, PatternEditor {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-md);
+}
+
+/* Dock Widgets */
+QDockWidget {
+    titlebar-close-icon: url(artwork:close.svg);
+    titlebar-normal-icon: url(artwork:restore.svg);
+}
+
+QDockWidget::title {
+    background-color: var(--surface);
+    padding: var(--spacing-sm);
+    border-top-left-radius: var(--border-radius-md);
+    border-top-right-radius: var(--border-radius-md);
+}
+
+/* Main Content Area */
+QMdiArea {
+    background-color: var(--background);
+}
+
+QMdiSubWindow {
+    border: 1px solid var(--dp-4);
+    border-radius: var(--border-radius-md);
+}
+
+/* Context Menus */
+QMenu {
+    background-color: var(--surface);
+    border: 1px solid var(--dp-4);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-xs) 0;
+}
+
+QMenu::item {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    color: var(--on-surface);
+}
+
+QMenu::item:selected {
+    background-color: var(--dp-4);
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: var(--dp-4);
+    margin: var(--spacing-xs) 0;
+}
+
+/* Specific LMMS Components */
+TrackLabelButton {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-sm);
+}
+
+TempoSyncKnob {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-sm);
+}
+
+Graph {
+    background-color: var(--surface);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--dp-4);
+}
+
+TimeDisplayWidget {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+}

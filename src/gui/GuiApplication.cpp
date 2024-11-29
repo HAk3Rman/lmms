@@ -28,6 +28,7 @@
 
 #include "LmmsStyle.h"
 #include "LmmsPalette.h"
+#include "ThemeManager.h"
 
 #include "AutomationEditor.h"
 #include "ConfigManager.h"
@@ -39,6 +40,8 @@
 #include "PianoRoll.h"
 #include "ProjectNotes.h"
 #include "SongEditor.h"
+
+#include "SplashScreen.h"
 
 #include <QApplication>
 #include <QDir>
@@ -91,95 +94,15 @@ GuiApplication::GuiApplication()
 	QDir::addSearchPath("artwork", ConfigManager::inst()->defaultThemeDir());
 	QDir::addSearchPath("artwork", ":/artwork");
 
-	auto lmmsstyle = new LmmsStyle();
-	QApplication::setStyle(lmmsstyle);
-
-	auto lmmspal = new LmmsPalette(nullptr, lmmsstyle);
-	auto lpal = new QPalette(lmmspal->palette());
-
-	QApplication::setPalette( *lpal );
-	LmmsStyle::s_palette = lpal;
+	// Initialize and apply theme
+	ThemeManager::instance()->loadTheme(ConfigManager::inst()->value("app", "theme", "default"));
+	ThemeManager::instance()->applyTheme();
 
 #ifdef LMMS_BUILD_APPLE
 	QApplication::setAttribute(Qt::AA_DontShowIconsInMenus, true);
 #endif
 
-	// Show splash screen
-	QSplashScreen splashScreen( embed::getIconPixmap( "splash" ) );
-	splashScreen.setFixedSize(splashScreen.pixmap().size());
-	splashScreen.show();
-
-	QHBoxLayout layout;
-	layout.setAlignment(Qt::AlignBottom);
-	splashScreen.setLayout(&layout);
-
-	// Create a left-aligned label for loading progress 
-	// & a right-aligned label for version info
-	QLabel loadingProgressLabel;
-	m_loadingProgressLabel = &loadingProgressLabel;
-	QLabel versionLabel(MainWindow::tr( "Version %1" ).arg( LMMS_VERSION ));
-
-	loadingProgressLabel.setAlignment(Qt::AlignLeft);
-	versionLabel.setAlignment(Qt::AlignRight);
-
-	layout.addWidget(&loadingProgressLabel);
-	layout.addWidget(&versionLabel);
-
-	// may have long gaps between future frames, so force update now
-	splashScreen.update();
-	qApp->processEvents();
-
-	connect(Engine::inst(), SIGNAL(initProgress(const QString&)), 
-		this, SLOT(displayInitProgress(const QString&)));
-
-	// Init central engine which handles all components of LMMS
-	Engine::init(false);
-
-	s_instance = this;
-
-	displayInitProgress(tr("Preparing UI"));
-
-	m_mainWindow = new MainWindow;
-	connect(m_mainWindow, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-	connect(m_mainWindow, SIGNAL(initProgress(const QString&)), 
-		this, SLOT(displayInitProgress(const QString&)));
-
-	displayInitProgress(tr("Preparing song editor"));
-	m_songEditor = new SongEditorWindow(Engine::getSong());
-	connect(m_songEditor, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing mixer"));
-	m_mixerView = new MixerView(Engine::mixer());
-	connect(m_mixerView, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing controller rack"));
-	m_controllerRackView = new ControllerRackView;
-	connect(m_controllerRackView, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing project notes"));
-	m_projectNotes = new ProjectNotes;
-	connect(m_projectNotes, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing microtuner"));
-	m_microtunerConfig = new MicrotunerConfig;
-	connect(m_microtunerConfig, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing pattern editor"));
-	m_patternEditor = new PatternEditorWindow(Engine::patternStore());
-	connect(m_patternEditor, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing piano roll"));
-	m_pianoRoll = new PianoRollWindow();
-	connect(m_pianoRoll, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	displayInitProgress(tr("Preparing automation editor"));
-	m_automationEditor = new AutomationEditorWindow;
-	connect(m_automationEditor, SIGNAL(destroyed(QObject*)), this, SLOT(childDestroyed(QObject*)));
-
-	splashScreen.finish(m_mainWindow);
-	m_mainWindow->finalize();
-
-	m_loadingProgressLabel = nullptr;
+    initialize();
 }
 
 GuiApplication::~GuiApplication()
@@ -187,6 +110,69 @@ GuiApplication::~GuiApplication()
 	s_instance = nullptr;
 }
 
+void GuiApplication::initialize()
+{
+    // Create and show splash screen
+    QPixmap splashPixmap(":/themes/prism/artwork/splash.svg");
+    SplashScreen* splash = new SplashScreen(splashPixmap);
+    splash->show();
+
+    // Process events to ensure splash is visible
+    qApp->processEvents();
+
+    splash->showStatusMessage(tr("Initializing theme system..."));
+    splash->setProgress(10);
+    
+    // Initialize theme system
+    ThemeManager::instance();
+    qApp->processEvents();
+
+    splash->showStatusMessage(tr("Loading configuration..."));
+    splash->setProgress(20);
+    
+    // Load configuration
+    ConfigManager::inst()->loadConfigFile();
+    qApp->processEvents();
+
+    splash->showStatusMessage(tr("Preparing audio system..."));
+    splash->setProgress(40);
+    
+    // Initialize audio
+    bool audioEngineInit = AudioEngine::init();
+    qApp->processEvents();
+
+    splash->showStatusMessage(tr("Creating main window..."));
+    splash->setProgress(60);
+    
+    // Create main window
+    m_mainWindow = new MainWindow;
+    qApp->processEvents();
+
+    splash->showStatusMessage(tr("Loading plugins..."));
+    splash->setProgress(80);
+    
+    // Load plugins
+    PluginFactory::instance();
+    qApp->processEvents();
+
+    splash->showStatusMessage(tr("Finalizing..."));
+    splash->setProgress(100);
+    qApp->processEvents();
+
+    // Show main window and finish splash
+    m_mainWindow->show();
+    splash->finish(m_mainWindow);
+    delete splash;
+
+    // Check audio initialization
+    if (!audioEngineInit)
+    {
+        QMessageBox::critical(m_mainWindow, tr("Audio Error"),
+            tr("Audio interface could not be initialized.\n"
+               "Please check your audio configuration."),
+            QMessageBox::Ok);
+    }
+}
 
 void GuiApplication::displayInitProgress(const QString &msg)
 {

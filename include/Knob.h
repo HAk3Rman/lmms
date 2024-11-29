@@ -73,13 +73,10 @@ class LMMS_EXPORT Knob : public FloatModelEditorBase
 	
 	Q_PROPERTY(QColor textColor READ textColor WRITE setTextColor)
 
-	void initUi( const QString & _name ); //!< to be called by ctors
-	void onKnobNumUpdated(); //!< to be called when you updated @a m_knobNum
-
 public:
 	Knob( KnobType _knob_num, QWidget * _parent = nullptr, const QString & _name = QString() );
 	Knob( QWidget * _parent = nullptr, const QString & _name = QString() ); //!< default ctor
-	Knob( const Knob& other ) = delete;
+	Knob( const Knob& other );
 
 	void setLabel( const QString & txt );
 	void setHtmlLabel( const QString &htmltxt );
@@ -111,23 +108,24 @@ public:
 	QColor textColor() const;
 	void setTextColor( const QColor & c );
 
-
 protected:
 	void paintEvent( QPaintEvent * _me ) override;
-
 	void changeEvent(QEvent * ev) override;
+	void mousePressEvent( QMouseEvent * _me ) override;
+	void mouseMoveEvent( QMouseEvent * _me ) override;
+	void wheelEvent( QWheelEvent * _we ) override;
+
+private slots:
+	void showContextMenu(const QPoint & pos);
+	void updateValueToolTip(const QPoint & pos);
 
 private:
+	void initUi( const QString & _name );
+	void onKnobNumUpdated();
 	QLineF calculateLine( const QPointF & _mid, float _radius,
 						float _innerRadius = 1) const;
-
 	void drawKnob( QPainter * _p );
 	bool updateAngle();
-
-	int angleFromValue( float value, float minValue, float maxValue, float totalAngle ) const
-	{
-		return static_cast<int>( ( value - 0.5 * ( minValue + maxValue ) ) / ( maxValue - minValue ) * m_totalAngle ) % 360;
-	}
 
 	QString m_label;
 	bool m_isHtmlLabel;
@@ -152,6 +150,9 @@ private:
 	QColor m_arcInactiveColor;
 	
 	QColor m_textColor;
+
+	// Animation support
+	QPropertyAnimation* m_valueAnimation;
 
 	KnobType m_knobNum;
 };

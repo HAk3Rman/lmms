@@ -31,6 +31,7 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QScrollArea>
+#include "ThemePreviewDialog.h"
 
 #include "AudioEngine.h"
 #include "debug.h"
@@ -43,7 +44,7 @@
 #include "SetupDialog.h"
 #include "TabBar.h"
 #include "TabButton.h"
-
+#include "ThemeManager.h"
 
 // Platform-specific audio-interface classes.
 #include "AudioAlsa.h"
@@ -122,6 +123,7 @@ SetupDialog::SetupDialog(ConfigTab tab_to_open) :
 	m_loopMarkerMode{ConfigManager::inst()->value("app", "loopmarkermode", "dual")},
 	m_lang(ConfigManager::inst()->value(
 			"app", "language")),
+	m_currentTheme(ConfigManager::inst()->value("app", "theme", "default")),
 	m_saveInterval(	ConfigManager::inst()->value(
 			"ui", "saveinterval").toInt() < 1 ?
 			MainWindow::DEFAULT_SAVE_INTERVAL_MINUTES :
@@ -346,7 +348,23 @@ SetupDialog::SetupDialog(ConfigTab tab_to_open) :
 	generalControlsLayout->addWidget(languageGroupBox);
 	generalControlsLayout->addSpacing(10);
 
-	// General layout ordering.
+	// Theme selection
+	auto themeSelectionLayout = new QHBoxLayout;
+	auto themeLabel = new QLabel(tr("Theme:"), generalControls);
+	m_themeComboBox = new QComboBox(generalControls);
+	m_themeComboBox->addItems(ThemeManager::instance()->availableThemes());
+	m_themeComboBox->setCurrentText(m_currentTheme);
+	connect(m_themeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(themeSelectionChanged(int)));
+
+	m_previewThemeButton = new QPushButton(tr("Preview"), generalControls);
+	connect(m_previewThemeButton, &QPushButton::clicked, this, &SetupDialog::showThemePreview);
+
+	themeSelectionLayout->addWidget(themeLabel);
+	themeSelectionLayout->addWidget(m_themeComboBox);
+	themeSelectionLayout->addWidget(m_previewThemeButton);
+	themeSelectionLayout->addStretch();
+	generalControlsLayout->addLayout(themeSelectionLayout);
+
 	generalControlsLayout->addStretch();
 	generalControls->setLayout(generalControlsLayout);
 	generalScroll->setWidget(generalControls);
@@ -538,7 +556,6 @@ SetupDialog::SetupDialog(ConfigTab tab_to_open) :
 		m_audioInterfaces->addItem(it.key());
 	}
 
-	// If no preferred audio device is saved, save the current one.
 	QString audioDevName = ConfigManager::inst()->value("audioengine", "audiodev");
 	if (m_audioInterfaces->findText(audioDevName) < 0)
 	{
@@ -895,16 +912,16 @@ SetupDialog::SetupDialog(ConfigTab tab_to_open) :
 	show();
 }
 
-
-
+void SetupDialog::showThemePreview()
+{
+    ThemePreviewDialog preview(this);
+    preview.exec();
+}
 
 SetupDialog::~SetupDialog()
 {
 	Engine::projectJournal()->setJournalling(true);
 }
-
-
-
 
 void SetupDialog::accept()
 {
@@ -943,6 +960,7 @@ void SetupDialog::accept()
 					QString::number(m_openLastProject));
 	ConfigManager::inst()->setValue("app", "loopmarkermode", m_loopMarkerMode);
 	ConfigManager::inst()->setValue("app", "language", m_lang);
+	ConfigManager::inst()->setValue("app", "theme", m_currentTheme);
 	ConfigManager::inst()->setValue("ui", "saveinterval",
 					QString::number(m_saveInterval));
 	ConfigManager::inst()->setValue("ui", "enableautosave",
@@ -998,9 +1016,6 @@ void SetupDialog::accept()
 	ConfigManager::inst()->saveConfigFile();
 }
 
-
-
-
 // General settings slots.
 
 void SetupDialog::toggleDisplaydBFS(bool enabled)
@@ -1008,48 +1023,40 @@ void SetupDialog::toggleDisplaydBFS(bool enabled)
 	m_displaydBFS = enabled;
 }
 
-
 void SetupDialog::toggleTooltips(bool enabled)
 {
 	m_tooltips = enabled;
 }
-
 
 void SetupDialog::toggleDisplayWaveform(bool enabled)
 {
 	m_displayWaveform = enabled;
 }
 
-
 void SetupDialog::toggleNoteLabels(bool enabled)
 {
 	m_printNoteLabels = enabled;
 }
-
 
 void SetupDialog::toggleCompactTrackButtons(bool enabled)
 {
 	m_compactTrackButtons = enabled;
 }
 
-
 void SetupDialog::toggleOneInstrumentTrackWindow(bool enabled)
 {
 	m_oneInstrumentTrackWindow = enabled;
 }
-
 
 void SetupDialog::toggleSideBarOnRight(bool enabled)
 {
 	m_sideBarOnRight = enabled;
 }
 
-
 void SetupDialog::toggleLetPreviewsFinish(bool enabled)
 {
 	m_letPreviewsFinish = enabled;
 }
-
 
 void SetupDialog::toggleTrackDeletionWarning(bool enabled)
 {
@@ -1061,42 +1068,35 @@ void SetupDialog::toggleMixerChannelDeletionWarning(bool enabled)
 	m_mixerChannelDeletionWarning = enabled;
 }
 
-
 void SetupDialog::toggleMMPZ(bool enabled)
 {
 	m_MMPZ = enabled;
 }
-
 
 void SetupDialog::toggleDisableBackup(bool enabled)
 {
 	m_disableBackup = enabled;
 }
 
-
 void SetupDialog::toggleOpenLastProject(bool enabled)
 {
 	m_openLastProject = enabled;
 }
-
 
 void SetupDialog::loopMarkerModeChanged()
 {
 	m_loopMarkerMode = m_loopMarkerComboBox->currentData().toString();
 }
 
-
 void SetupDialog::setLanguage(int lang)
 {
 	m_lang = m_languages[lang];
 }
 
-
 void SetupDialog::toggleSoloLegacyBehavior(bool enabled)
 {
 	m_soloLegacyBehavior = enabled;
 }
-
 
 // Performance settings slots.
 
@@ -1111,7 +1111,6 @@ void SetupDialog::setAutoSaveInterval(int value)
 		tr("Autosave interval: %1").arg(minutes));
 }
 
-
 void SetupDialog::toggleAutoSave(bool enabled)
 {
 	m_enableAutoSave = enabled;
@@ -1120,12 +1119,10 @@ void SetupDialog::toggleAutoSave(bool enabled)
 	setAutoSaveInterval(m_saveIntervalSlider->value());
 }
 
-
 void SetupDialog::toggleRunningAutoSave(bool enabled)
 {
 	m_enableRunningAutoSave = enabled;
 }
-
 
 void SetupDialog::resetAutoSave()
 {
@@ -1134,18 +1131,15 @@ void SetupDialog::resetAutoSave()
 	m_runningAutoSave->setChecked(false);
 }
 
-
 void SetupDialog::toggleSmoothScroll(bool enabled)
 {
 	m_smoothScroll = enabled;
 }
 
-
 void SetupDialog::toggleAnimateAFP(bool enabled)
 {
 	m_animateAFP = enabled;
 }
-
 
 void SetupDialog::vstEmbedMethodChanged()
 {
@@ -1153,12 +1147,10 @@ void SetupDialog::vstEmbedMethodChanged()
 	m_vstAlwaysOnTopCheckBox->setVisible(m_vstEmbedMethod == "none");
 }
 
-
 void SetupDialog::toggleVSTAlwaysOnTop(bool enabled)
 {
 	m_vstAlwaysOnTop = enabled;
 }
-
 
 void SetupDialog::toggleDisableAutoQuit(bool enabled)
 {
@@ -1175,7 +1167,6 @@ void SetupDialog::audioInterfaceChanged(const QString & iface)
 
 	m_audioIfaceSetupWidgets[m_audioIfaceNames[iface]]->show();
 }
-
 
 void SetupDialog::updateBufferSizeWarning(int value)
 {
@@ -1197,7 +1188,6 @@ void SetupDialog::updateBufferSizeWarning(int value)
 	text += "</ul>";
 	m_bufferSizeWarnLbl->setText(text);
 }
-
 
 void SetupDialog::setBufferSize(int value)
 {
@@ -1227,12 +1217,10 @@ void SetupDialog::setBufferSize(int value)
 	updateBufferSizeWarning(m_bufferSize);
 }
 
-
 void SetupDialog::resetBufferSize()
 {
 	setBufferSize(DEFAULT_BUFFER_SIZE / BUFFERSIZE_RESOLUTION);
 }
-
 
 // MIDI settings slots.
 
@@ -1252,7 +1240,6 @@ void SetupDialog::toggleMidiAutoQuantization(bool enabled)
 	m_midiAutoQuantize = enabled;
 }
 
-
 // Paths settings slots.
 
 void SetupDialog::openWorkingDir()
@@ -1265,12 +1252,10 @@ void SetupDialog::openWorkingDir()
 	}
 }
 
-
 void SetupDialog::setWorkingDir(const QString & workingDir)
 {
 	m_workingDir = workingDir;
 }
-
 
 void SetupDialog::openVSTDir()
 {
@@ -1282,12 +1267,10 @@ void SetupDialog::openVSTDir()
 	}
 }
 
-
 void SetupDialog::setVSTDir(const QString & vstDir)
 {
 	m_vstDir = vstDir;
 }
-
 
 void SetupDialog::openLADSPADir()
 {
@@ -1307,12 +1290,10 @@ void SetupDialog::openLADSPADir()
 	}
 }
 
-
 void SetupDialog::setLADSPADir(const QString & ladspaDir)
 {
 	m_ladspaDir = ladspaDir;
 }
-
 
 void SetupDialog::openSF2Dir()
 {
@@ -1324,12 +1305,10 @@ void SetupDialog::openSF2Dir()
 	}
 }
 
-
 void SetupDialog::setSF2Dir(const QString & sf2Dir)
 {
 	m_sf2Dir = sf2Dir;
 }
-
 
 void SetupDialog::openSF2File()
 {
@@ -1344,14 +1323,12 @@ void SetupDialog::openSF2File()
 #endif
 }
 
-
 void SetupDialog::setSF2File(const QString & sf2File)
 {
 #ifdef LMMS_HAVE_FLUIDSYNTH
 	m_sf2File = sf2File;
 #endif
 }
-
 
 void SetupDialog::openGIGDir()
 {
@@ -1363,12 +1340,10 @@ void SetupDialog::openGIGDir()
 	}
 }
 
-
 void SetupDialog::setGIGDir(const QString & gigDir)
 {
 	m_gigDir = gigDir;
 }
-
 
 void SetupDialog::openThemeDir()
 {
@@ -1380,12 +1355,10 @@ void SetupDialog::openThemeDir()
 	}
 }
 
-
 void SetupDialog::setThemeDir(const QString & themeDir)
 {
 	m_themeDir = themeDir;
 }
-
 
 void SetupDialog::openBackgroundPicFile()
 {
@@ -1415,19 +1388,27 @@ void SetupDialog::openBackgroundPicFile()
 	}
 }
 
-
 void SetupDialog::setBackgroundPicFile(const QString & backgroundPicFile)
 {
 	m_backgroundPicFile = backgroundPicFile;
 }
-
-
-
 
 void SetupDialog::showRestartWarning()
 {
 	restartWarningLbl->show();
 }
 
+void SetupDialog::themeSelectionChanged(int index)
+{
+	QString selectedTheme = m_themeComboBox->itemText(index);
+	if (selectedTheme != m_currentTheme)
+	{
+		m_currentTheme = selectedTheme;
+		ConfigManager::inst()->setValue("app", "theme", selectedTheme);
+		ThemeManager::instance()->loadTheme(selectedTheme);
+		ThemeManager::instance()->applyTheme();
+		showRestartWarning();
+	}
+}
 
 } // namespace lmms::gui

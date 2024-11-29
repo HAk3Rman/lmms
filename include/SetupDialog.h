@@ -40,7 +40,7 @@ class QComboBox;
 class QLabel;
 class QLineEdit;
 class QSlider;
-
+class QPushButton;
 
 namespace lmms::gui
 {
@@ -130,6 +130,10 @@ private slots:
 
 	void showRestartWarning();
 
+	void themeSelectionChanged(int index);
+
+	void showThemePreview();
+
 private:
 	TabBar * m_tabBar;
 
@@ -202,6 +206,9 @@ private:
 #endif
 	QString m_themeDir;
 	QString m_backgroundPicFile;
+	QString m_currentTheme;
+	QComboBox* m_themeComboBox;
+	QPushButton* m_previewThemeButton;
 
 	QLineEdit * m_workingDirLineEdit;
 	QLineEdit * m_vstDirLineEdit;
@@ -215,6 +222,7 @@ private:
 	QLineEdit * m_backgroundPicFileLineEdit;
 
 	QLabel * restartWarningLbl;
+	void themeChanged(const QString& theme);
 };
 
 

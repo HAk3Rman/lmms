@@ -26,18 +26,22 @@
 #define LMMS_GUI_ABOUT_DIALOG_H
 
 #include <QDialog>
-
-#include "ui_about_dialog.h"
+#include "lmms_export.h"
 
 namespace lmms::gui
 {
 
-class AboutDialog : public QDialog, public Ui::AboutDialog
+class LMMS_EXPORT AboutDialog : public QDialog
 {
-public:
-	AboutDialog(QWidget* parent=0);
+    Q_OBJECT
 
-} ;
+public:
+    AboutDialog(QWidget* parent = nullptr);
+    ~AboutDialog() override = default;
+
+private:
+    void setupModernUi();
+};
 
 } // namespace lmms::gui
 

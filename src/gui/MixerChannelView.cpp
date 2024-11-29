@@ -48,6 +48,7 @@ MixerChannelView::MixerChannelView(QWidget* parent, MixerView* mixerView, int ch
 	: QWidget(parent)
 	, m_mixerView(mixerView)
 	, m_channelIndex(channelIndex)
+	, m_animationOffset(0.0)
 {
 	auto retainSizeWhenHidden = [](QWidget* widget) {
 		auto sizePolicy = widget->sizePolicy();
@@ -188,28 +189,65 @@ void MixerChannelView::contextMenuEvent(QContextMenuEvent*)
 
 void MixerChannelView::paintEvent(QPaintEvent*)
 {
-	static constexpr auto innerBorderSize = 3;
-	static constexpr auto outerBorderSize = 1;
+    static constexpr auto innerBorderSize = 3;
+    static constexpr auto outerBorderSize = 1;
 
-	const auto channel = mixerChannel();
-	const auto isActive = m_mixerView->currentMixerChannel() == this;
-	const auto width = rect().width();
-	const auto height = rect().height();
-	auto painter = QPainter{this};
+    const auto channel = mixerChannel();
+    const auto isActive = m_mixerView->currentMixerChannel() == this;
+    const auto width = rect().width();
+    const auto height = rect().height();
+    QPainter painter(this);
 
-	if (channel->color().has_value() && !channel->m_muteModel.value())
-	{
-		painter.fillRect(rect(), channel->color()->darker(isActive ? 120 : 150));
-	}
-	else { painter.fillRect(rect(), isActive ? backgroundActive().color() : painter.background().color()); }
+    // Draw background color
+    if (channel->color().has_value() && !channel->m_muteModel.value()) {
+        painter.fillRect(rect(), channel->color()->darker(isActive ? 120 : 150));
+    } else {
+        painter.fillRect(rect(), isActive ? backgroundActive().color() : painter.background().color());
+    }
 
-	// inner border
-	painter.setPen(isActive ? strokeInnerActive() : strokeInnerInactive());
-	painter.drawRect(1, 1, width - innerBorderSize, height - innerBorderSize);
+    // Draw equalizer bands
+    drawEqualizerBands(painter);
 
-	// outer border
-	painter.setPen(isActive ? strokeOuterActive() : strokeOuterInactive());
-	painter.drawRect(0, 0, width - outerBorderSize, height - outerBorderSize);
+    // Draw volume meter
+    drawVolumeMeter(painter);
+
+    // Inner border
+    painter.setPen(isActive ? strokeInnerActive() : strokeInnerInactive());
+    painter.drawRect(1, 1, width - innerBorderSize, height - innerBorderSize);
+
+    // Outer border
+    painter.setPen(isActive ? strokeOuterActive() : strokeOuterInactive());
+    painter.drawRect(0, 0, width - outerBorderSize, height - outerBorderSize);
+}
+
+void MixerChannelView::drawEqualizerBands(QPainter &painter) {
+    // Example drawing logic for equalizer bands
+    const int bandCount = 10; // Number of frequency bands
+    const int bandWidth = rect().width() / bandCount;
+    const int maxHeight = rect().height();
+
+    for (int i = 0; i < bandCount; ++i) {
+        // Simulate band height with a simple sine wave for demonstration
+        int bandHeight = static_cast<int>((std::sin(i + m_animationOffset) + 1) / 2 * maxHeight);
+
+        QRect bandRect(i * bandWidth, maxHeight - bandHeight, bandWidth - 1, bandHeight);
+        painter.fillRect(bandRect, QColor(100, 150, 200)); // Use a color for the bands
+    }
+
+    // Update animation offset for next frame
+    m_animationOffset += 0.1;
+}
+
+void MixerChannelView::drawVolumeMeter(QPainter &painter) {
+    // Example drawing logic for volume meter
+    const int meterWidth = 20;
+    const int maxHeight = rect().height();
+
+    // Simulate volume level with a simple sine wave for demonstration
+    int volumeHeight = static_cast<int>((std::sin(m_animationOffset) + 1) / 2 * maxHeight);
+
+    QRect meterRect(rect().width() - meterWidth, maxHeight - volumeHeight, meterWidth, volumeHeight);
+    painter.fillRect(meterRect, QColor(200, 100, 100)); // Use a color for the meter
 }
 
 void MixerChannelView::mousePressEvent(QMouseEvent*)
