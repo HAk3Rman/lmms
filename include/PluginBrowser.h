@@ -26,80 +26,66 @@
 #define LMMS_GUI_PLUGIN_BROWSER_H
 
 #include <QPixmap>
-#include <QStyledItemDelegate>
+
 #include "SideBarWidget.h"
 #include "Plugin.h"
-#include "FavoritesManager.h"
 
 class QLineEdit;
 class QTreeWidget;
-class QTreeWidgetItem;
 
 namespace lmms::gui
 {
 
 class PluginBrowser : public SideBarWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    PluginBrowser(QWidget* parent);
-    ~PluginBrowser() override = default;
+	PluginBrowser( QWidget * _parent );
+	~PluginBrowser() override = default;
 
 private slots:
-    void onFilterChanged(const QString& filter);
-    void onFavoritesChanged(const QString& pluginId);
-    void showFavoritesOnly(bool checked);
-    void showPluginDetails(QTreeWidgetItem* item, int column);
+	void onFilterChanged( const QString & filter );
 
 private:
-    void addPlugins();
-    void updateRootVisibility(int index);
-    void updateRootVisibilities();
-    void createCategoryIcons();
-    void setupUi();
-    void createFavoritesSection();
+	void addPlugins();
+	void updateRootVisibility( int index );
+	void updateRootVisibilities();
 
-    QWidget* m_view;
-    QTreeWidget* m_descTree;
-    QLineEdit* m_searchBar;
-    QMap<QString, QIcon> m_categoryIcons;
-    QTreeWidgetItem* m_favoritesRoot;
-    bool m_showFavoritesOnly;
+	QWidget * m_view;
+	QTreeWidget * m_descTree;
 };
+
 
 class PluginDescWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    using PluginKey = Plugin::Descriptor::SubPluginFeatures::Key;
-    PluginDescWidget(const PluginKey& pk, QWidget* parent);
-    QString name() const;
-    void openInNewInstrumentTrack(QString value);
-    QString pluginId() const;
-    bool isFavorite() const;
+	using PluginKey = Plugin::Descriptor::SubPluginFeatures::Key;
+	PluginDescWidget( const PluginKey & _pk, QWidget * _parent );
+	QString name() const;
+	void openInNewInstrumentTrack(QString value);
 
 protected:
-    void enterEvent(QEvent* e) override;
-    void leaveEvent(QEvent* e) override;
-    void mousePressEvent(QMouseEvent* me) override;
-    void paintEvent(QPaintEvent* pe) override;
-    void contextMenuEvent(QContextMenuEvent* e) override;
-
-private slots:
-    void toggleFavorite();
+	// Todo : cleanup once QT 5 support is dropped
+	#if (QT_VERSION > QT_VERSION_CHECK(6, 0, 0))
+	void enterEvent( QEnterEvent * _e) override;
+	#else
+	void enterEvent(QEvent* _e) override;
+	#endif
+	void leaveEvent( QEvent * _e ) override;
+	void mousePressEvent( QMouseEvent * _me ) override;
+	void paintEvent( QPaintEvent * _pe ) override;
+	void contextMenuEvent(QContextMenuEvent* e) override;
 
 private:
-    void loadPluginIcon();
-    void createThumbnail();
+	constexpr static int DEFAULT_HEIGHT{24};
 
-    PluginKey m_pluginKey;
-    QPixmap m_logo;
-    QPixmap m_thumbnail;
-    bool m_mouseOver;
-    QString m_pluginId;
+	PluginKey m_pluginKey;
+	QPixmap m_logo;
 
-    friend class PluginBrowser;
+	bool m_mouseOver;
 };
+
 
 } // namespace lmms::gui
 
